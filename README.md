@@ -253,7 +253,7 @@ flowchart TD
     EC2 --> IAM
 
     ALB -->|Response: Classification or Search Results| User
-
+```
 
 ## Production Readiness Notes
 
