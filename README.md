@@ -217,42 +217,34 @@ The architecture involves the following components:
 Below is a flowchart representing the system architecture:
 
 ```mermaid
-flowchart TD
-    subgraph Client Side
-        User["User"]
-    end
-
-    subgraph AWS Infrastructure
+flowchart TB
+    subgraph AWS_Infrastructure["AWS Infrastructure"]
         ALB["Application Load Balancer"]
         EC2["EC2 Instance with FastAPI Application"]
-        S3["S3 Bucket for logs/data"]
-        Qdrant["Qdrant Vector Database on EC2"]
-        RDS["RDS (Relational Database Service)"]
         Cache["ElastiCache (Redis)"]
-        VPC["VPC (Virtual Private Cloud)"]
+        Qdrant["Qdrant Vector Database"]
+        RDS["RDS (Relational Database Service)"]
+        S3["S3 Bucket"]
+        CloudWatch["CloudWatch"]
         IAM["IAM (Identity and Access Management)"]
-        CloudWatch["CloudWatch for Monitoring & Logs"]
     end
-
-    User -->|Request: /scrape or /search| ALB
-    ALB --> EC2
-
-    EC2 -->|Scrape Website| Cache
-    Cache -->|Cache Hit| EC2
-    EC2 -->|Cache Miss: Fetch content from website| Internet
     
-    EC2 -->|Store Scraped Content| S3
+    subgraph User_Side["User Side"]
+        User["User"]
+    end
+    
+    User -->|Requests: /scrape, /search| ALB
+    ALB --> EC2
+    EC2 -->|Check Cache| Cache
+    Cache -->|Cache Hit| EC2
+    EC2 -->|Cache Miss: Fetch Content| Internet
+    EC2 -->|Store Scraped Data| S3
     EC2 -->|Classify Content| Qdrant
-
-    EC2 -->|Store Vector and Metadata| Qdrant
-    EC2 -->|Query Similar Vectors| Qdrant
-
-    EC2 -->|Store Metadata| RDS
-
+    EC2 -->|Store Vectors and Metadata| Qdrant
+    EC2 -->|Save Metadata| RDS
     EC2 -->|Send Logs| CloudWatch
     EC2 --> IAM
-
-    ALB -->|Response: Classification or Search Results| User
+    ALB -->|Response| User
 ```
 
 ## Production Readiness Notes
