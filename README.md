@@ -200,7 +200,7 @@ To run the unit tests:
 
 ## System Architecture
 
-This section provides an overview of the system architecture when deployed in a production environment on AWS.
+This section provides an overview of the potenial system architecture when application will be deploy in a production environment on AWS.
 
 The architecture involves the following components:
 
@@ -209,7 +209,6 @@ The architecture involves the following components:
 3. **EC2 Instances:** Run the FastAPI application and handle the core tasks like web scraping, content classification, and vector storage.
 4. **ElastiCache (Redis):** Caches the scraped content to avoid redundant processing and improve performance.
 5. **Qdrant Vector Database:** Stores vectorized representations of website content and supports semantic search operations.
-6. **RDS:** Stores metadata about URLs, classifications, and other relational data.
 7. **S3 Bucket:** Used for storing logs and any large datasets or outputs.
 8. **CloudWatch:** Monitors the application's performance, logs, and errors.
 9. **IAM:** Manages security and access control for the AWS resources.
@@ -223,7 +222,6 @@ flowchart TB
         EC2["EC2 Instance with FastAPI Application"]
         Cache["ElastiCache (Redis)"]
         Qdrant["Qdrant Vector Database"]
-        RDS["RDS (Relational Database Service)"]
         S3["S3 Bucket"]
         CloudWatch["CloudWatch"]
         IAM["IAM (Identity and Access Management)"]
@@ -241,7 +239,6 @@ flowchart TB
     EC2 -->|Store Scraped Data| S3
     EC2 -->|Classify Content| Qdrant
     EC2 -->|Store Vectors and Metadata| Qdrant
-    EC2 -->|Save Metadata| RDS
     EC2 -->|Send Logs| CloudWatch
     EC2 --> IAM
     ALB -->|Response| User
