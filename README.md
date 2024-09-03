@@ -198,6 +198,62 @@ To run the unit tests:
       •	test_scrape_and_search_large_input: checks handling of large input texts.
       •	test_root: Confirms the root endpoint returns the expected message.
 
+## System Architecture
+
+This section provides an overview of the system architecture when deployed in a production environment on AWS.
+
+The architecture involves the following components:
+
+1. **User Interaction:** The user sends requests to the FastAPI application endpoints (`/scrape`, `/search`).
+2. **Application Load Balancer (ALB):** Manages incoming traffic and directs it to the EC2 instances hosting the FastAPI application.
+3. **EC2 Instances:** Run the FastAPI application and handle the core tasks like web scraping, content classification, and vector storage.
+4. **ElastiCache (Redis):** Caches the scraped content to avoid redundant processing and improve performance.
+5. **Qdrant Vector Database:** Stores vectorized representations of website content and supports semantic search operations.
+6. **RDS:** Stores metadata about URLs, classifications, and other relational data.
+7. **S3 Bucket:** Used for storing logs and any large datasets or outputs.
+8. **CloudWatch:** Monitors the application's performance, logs, and errors.
+9. **IAM:** Manages security and access control for the AWS resources.
+
+Below is a flowchart representing the system architecture:
+
+```mermaid
+flowchart TD
+    subgraph Client Side
+        User["User"]
+    end
+
+    subgraph AWS Infrastructure
+        ALB["Application Load Balancer"]
+        EC2["EC2 Instance with FastAPI Application"]
+        S3["S3 Bucket for logs/data"]
+        Qdrant["Qdrant Vector Database on EC2"]
+        RDS["RDS (Relational Database Service)"]
+        Cache["ElastiCache (Redis)"]
+        VPC["VPC (Virtual Private Cloud)"]
+        IAM["IAM (Identity and Access Management)"]
+        CloudWatch["CloudWatch for Monitoring & Logs"]
+    end
+
+    User -->|Request: /scrape or /search| ALB
+    ALB --> EC2
+
+    EC2 -->|Scrape Website| Cache
+    Cache -->|Cache Hit| EC2
+    EC2 -->|Cache Miss: Fetch content from website| Internet
+    
+    EC2 -->|Store Scraped Content| S3
+    EC2 -->|Classify Content| Qdrant
+
+    EC2 -->|Store Vector and Metadata| Qdrant
+    EC2 -->|Query Similar Vectors| Qdrant
+
+    EC2 -->|Store Metadata| RDS
+
+    EC2 -->|Send Logs| CloudWatch
+    EC2 --> IAM
+
+    ALB -->|Response: Classification or Search Results| User
+
 
 ## Production Readiness Notes
 
